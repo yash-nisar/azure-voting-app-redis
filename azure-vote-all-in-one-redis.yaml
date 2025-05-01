@@ -57,7 +57,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
       - name: azure-vote-front
-        image: yashnisar/azure-vote-front:v2-redis
+        image: yashnisar/azure-vote-front:v3-redis
         ports:
         - containerPort: 80
         resources:

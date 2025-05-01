@@ -12,7 +12,7 @@ services:
   azure-vote-front:
     platform: linux/amd64
     build: ./azure-vote
-    image: yashnisar/azure-vote-front:v2-redis
+    image: yashnisar/azure-vote-front:v3-redis
     container_name: azure-vote-front
     environment:
       REDIS: azure-vote-back
