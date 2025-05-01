@@ -46,7 +46,19 @@ title = os.environ.get('TITLE', app.config['TITLE'])
 show_host_str = os.environ.get('SHOWHOST', app.config['SHOWHOST']).lower()
 
 # --- Redis Connection ---
-redis_server = os.environ.get('REDIS')
+redis_server_env = os.environ.get('REDIS')
+# Parse host and port from redis_server_env
+if ':' in redis_server_env:
+    redis_host, redis_port_str = redis_server_env.split(':', 1)
+    try:
+        redis_port = int(redis_port_str)
+    except ValueError:
+        logger.error(f"Invalid Redis port in REDIS env: {redis_port_str}, defaulting to 6379")
+        redis_port = 6379
+else:
+    redis_host = redis_server_env
+    redis_port = 6379
+
 redis_password = os.environ.get('REDIS_PWD')
 redis_conn = None # Initialize connection variable
 
@@ -69,15 +81,15 @@ def get_redis_connection():
              redis_conn = None # Force reconnect attempt
 
 
-    if not redis_server:
+    if not redis_server_env:
         logger.critical("REDIS environment variable not set.")
         # Cannot operate without redis server defined, return None
         return None
 
-    logger.info(f"Attempting to establish new Redis connection to: {redis_server}")
+    logger.info(f"Attempting to establish new Redis connection to: {redis_host}")
     redis_connection_args = {
-        'host': redis_server,
-        'port': 6379,
+        'host': redis_host,
+        'port': redis_port,
         'socket_connect_timeout': 5, # Timeout for establishing connection
         'socket_timeout': 5,        # Timeout for operations
         'decode_responses': True,
@@ -95,7 +107,7 @@ def get_redis_connection():
         redis_conn = new_conn # Store the successful connection globally
         return redis_conn
     except (redis.exceptions.ConnectionError, redis.exceptions.TimeoutError) as e:
-        logger.error(f"Failed to connect to Redis (host: {redis_server}): {e}")
+        logger.error(f"Failed to connect to Redis (host: {redis_host}): {e}")
         return None
     except redis.exceptions.AuthenticationError as e:
         logger.critical(f"Redis authentication failed: {e}. Check REDIS_PWD.")
