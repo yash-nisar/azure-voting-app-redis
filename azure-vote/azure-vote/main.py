@@ -4,6 +4,7 @@ VOTE1VALUE = 'Cats'
 VOTE2VALUE = 'Dogs'
 SHOWHOST = 'false'
 
+import ssl
 from flask import Flask, request, render_template, jsonify # Added jsonify for health check
 import os
 import random
@@ -93,7 +94,9 @@ def get_redis_connection():
         'socket_connect_timeout': 5, # Timeout for establishing connection
         'socket_timeout': 5,        # Timeout for operations
         'decode_responses': True,
-        'health_check_interval': 30 # Check connection health periodically
+        'health_check_interval': 30, # Check connection health periodically
+        'ssl': True,
+        'ssl_cert_reqs': ssl.CERT_NONE, # Disable SSL cert verification
     }
     if redis_password:
         logger.debug("Using password for Redis connection.") # Downgrade log level
@@ -107,7 +110,7 @@ def get_redis_connection():
         redis_conn = new_conn # Store the successful connection globally
         return redis_conn
     except (redis.exceptions.ConnectionError, redis.exceptions.TimeoutError) as e:
-        logger.error(f"Failed to connect to Redis (host: {redis_host}): {e}")
+        logger.error(f"Failed to connect to Redis {redis_host}:{redis_port}")
         return None
     except redis.exceptions.AuthenticationError as e:
         logger.critical(f"Redis authentication failed: {e}. Check REDIS_PWD.")

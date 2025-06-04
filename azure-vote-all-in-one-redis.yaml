@@ -1,42 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      nodeSelector:
-        "kubernetes.io/os": linux
-      containers:
-      - name: redis
-        image: mcr.microsoft.com/oss/bitnami/redis:6.0.8
-        env:
-        - name: ALLOW_EMPTY_PASSWORD
-          value: "yes"
-        ports:
-        - containerPort: 6379
-          name: redis
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis
-spec:
-  ports:
-  - port: 6379
-  selector:
-    app: redis
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: azure-vote-front
 spec:
   replicas: 1
@@ -57,7 +21,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
       - name: azure-vote-front
-        image: yashnisar/azure-vote-front:v3-redis
+        image: yashnisar/azure-vote-front:v6-redis
         ports:
         - containerPort: 80
         resources:
@@ -67,7 +31,9 @@ spec:
             cpu: 500m
         env:
         - name: REDIS
-          value: "redis:6379"
+          value: "your_redis_hostname:6380"
+        - name: REDIS_PWD
+          value: "your_redis_password"
 ---
 apiVersion: v1
 kind: Service
